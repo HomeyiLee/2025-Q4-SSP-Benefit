@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>亞馬遜全球開店服務商建議系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: flex;
+            min-height: 600px;
+        }
+        
+        .input-section {
+            flex: 1;
+            padding: 30px;
+            border-right: 1px solid #eee;
+        }
+        
+        .result-section {
+            flex: 1;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        select, textarea, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        select:focus, textarea:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .service-type {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        
+        .company-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .contact-info {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .services {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        
+        .no-results {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .region-tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 10px;
+            background: #e9ecef;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .tab:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+        
+        .tab:last-child {
+            border-radius: 0 8px 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌐 亞馬遜全球開店服務商建議系統</h1>
+            <p>根據您的需求，為您推薦最適合的第三方服務商</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="input-section">
+                <h2>📝 請描述您的需求</h2>
+                
+                <div class="region-tabs">
+                    <button class="tab active" onclick="switchRegion('EU')">歐洲市場</button>
+                    <button class="tab" onclick="switchRegion('NA')">北美市場</button>
+                    <button class="tab" onclick="switchRegion('JP')">日本市場</button>
+                    <button class="tab" onclick="switchRegion('MENA')">中東市場</button>
+                </div>
+                
+                <div class="form-group">
+                    <label for="businessStage">🚀 您的業務階段</label>
+                    <select id="businessStage">
+                        <option value="">請選擇...</option>
+                        <option value="preparation">開站前準備</option>
+                        <option value="listing">產品上架期</option>
+                        <option value="shipping">貨件發貨期</option>
+                        <option value="selling">開始銷售期</option>
+                        <option value="growth">業績加速期</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="serviceType">🛠️ 需要的服務類型</label>
+                    <select id="serviceType">
+                        <option value="">請選擇...</option>
+                        <option value="代營運">代營運服務</option>
+                        <option value="物流">物流及海外倉</option>
+                        <option value="產品認證">產品認證</option>
+                        <option value="稅務會計">稅務會計</option>
+                        <option value="商標申請">商標申請</option>
+                        <option value="廣告行銷">站內外廣告及內容行銷</option>
+                        <option value="金流">第三方金流</option>
+                        <option value="教育課程">教育課程</option>
+                        <option value="翻譯">文案翻譯</option>
+                        <option value="條碼">產品國際條碼</option>
+                        <option value="保險">保險</option>
+                        <option value="SaaS">賣家SaaS軟體</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="productType">📦 產品類型</label>
+                    <input type="text" id="productType" placeholder="例如：電子產品、服飾、食品、玩具等">
+                </div>
+                
+                <div class="form-group">
+                    <label for="budget">💰 預算範圍</label>
+                    <select id="budget">
+                        <option value="">請選擇...</option>
+                        <option value="low">小型預算 (< 10萬)</option>
+                        <option value="medium">中型預算 (10-50萬)</option>
+                        <option value="high">大型預算 (> 50萬)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="requirements">📋 詳細需求描述</label>
+                    <textarea id="requirements" placeholder="請詳細描述您的具體需求、遇到的問題或希望達成的目標..."></textarea>
+                </div>
+                
+                <button class="btn" onclick="getRecommendations()">
+                    🔍 獲取服務商建議
+                </button>
+            </div>
+            
+            <div class="result-section">
+                <h2>💡 推薦結果</h2>
+                <div id="results">
+                    <div class="no-results">
+                        請填寫左側表單，我們將為您推薦最適合的服務商 🎯
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRegion = 'EU';
+        
+        // 服務商數據庫
+        const serviceProviders = {
+            EU: {
+                "代營運": [
+                    {
+                        name: "秩宇股份有限公司 (Wiser)",
+                        contact: "Tank Liao 0939820211, tank@wwwiser.com.tw",
+                        services: "亞馬遜全方位營運、動態服務、品牌電商轉型顧問、精準數位行銷",
+                        stage: ["preparation", "listing", "selling", "growth"]
+                    },
+                    {
+                        name: "Hello EC 你好電商有限公司",
+                        contact: "彭凱 Kai Pong 0920-999228, kaipong@helloec.biz",
+                        services: "專業電商團隊執行、短期/長期店鋪管家、社群推廣執行",
+                        stage: ["listing", "selling", "growth"]
+                    }
+                ],
+                "物流": [
+                    {
+                        name: "金匯國際物流 (GoldenWell)",
+                        contact: "Linda Tsai 02-26530032 Ext 170, lindatsai@goldenwelltw.com",
+                        services: "FBA運送服務、海空運進出口、歐洲稅金遞延、荷蘭中轉服務",
+                        stage: ["shipping", "selling", "growth"]
+                    },
+                    {
+                        name: "萬泰物流供應鏈 (Dolphin)",
+                        contact: "Eason Chiang 02-25459900 Ext 8758, eason.chiang@dolphin-gp.com",
+                        services: "海空運複合運輸、倉儲配送、優質企業AEO認證",
+                        stage: ["shipping", "selling", "growth"]
+                    }
+                ],
+                "產品認證": [
+                    {
+                        name: "CBES 唯高盛集團",
+                        contact: "Sammi Ku 02-77516005 Ext 28, sammi.ku@cbesg.com",
+                        services: "歐洲產品認證服務、CE認證、歐盟RoHS、德國包裝法、WEEE等",
+                        stage: ["preparation", "listing"]
+                    },
+                    {
+                        name: "SGS Taiwan 台灣檢驗科技股份有限公司",
+                        contact: "Olivia Li 李俞萱 +886 2 2299 3279 #3517",
+                        services: "全方位測試驗證檢驗、CE認證、RoHS、REACH、WEEE、EN 71",
+                        stage: ["preparation", "listing"]
+                    }
+                ]
+            },
+            NA: {
+                "代營運": [
+                    {
+                        name: "睿博數位行銷有限公司(TransBiz)",
+                        contact: "Tami 02-25429856, hello@transbiz.co",
+                        services: "國際品牌市場策略、亞馬遜品牌策略師運營、品牌差異化策略",
+                        stage: ["preparation", "listing", "selling", "growth"]
+                    },
+                    {
+                        name: "EcomPlus",
+                        contact: "Alex Liu 02-77137060, alex.liu@ecomplusco.com",
+                        services: "輕量化代營運、廣告操作、數據化關鍵詞研究、站外引流",
+                        stage: ["selling", "growth"]
+                    }
+                ],
+                "物流": [
+                    {
+                        name: "金匯國際物流 (GoldenWell)",
+                        contact: "Linda Tsai 02-26530032 Ext 170, lindatsai@goldenwelltw.com",
+                        services: "美國FBA運送服務、海運CBM式計價、進出口報關",
+                        stage: ["shipping", "selling", "growth"]
+                    },
+                    {
+                        name: "好好國際物流 (Yes Logistics)",
+                        contact: "Andy Lin 0912546316, andylin@yeslogistics.com",
+                        services: "美國及加拿大服務、BOND申請、FDA範疇產品清關",
+                        stage: ["shipping", "selling", "growth"]
+                    }
+                ],
+                "產品認證": [
+                    {
+                        name: "SGS Taiwan 台灣檢驗科技股份有限公司",
+                        contact: "Olivia Li 李俞萱 +886 2 2299 3279 #3517",
+                        services: "FCC、UL、FDA測試、CPSIA、BQB認證服務",
+                        stage: ["preparation", "listing"]
+                    },
+                    {
+                        name: "傑地有限公司 (Jasdi)",
+                        contact: "童寶慶 (Tony) 0425685848, tony@jasdi.com.tw",
+                        services: "FDA認證申請、食品飲料、醫療設備、非處方藥、化妝品MoCRA",
+                        stage: ["preparation", "listing"]
+                    }
+                ]
+            }
+        };
+        
+        function switchRegion(region) {
+            currentRegion = region;
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // 清空結果
+            document.getElementById('results').innerHTML = '<div class="no-results">請填寫左側表單，我們將為您推薦最適合的服務商 🎯</div>';
+        }
+        
+        function getRecommendations() {
+            const businessStage = document.getElementById('businessStage').value;
+            const serviceType = document.getElementById('serviceType').value;
+            const productType = document.getElementById('productType').value;
+            const budget = document.getElementById('budget').value;
+            const requirements = document.getElementById('requirements').value;
+            
+            // 顯示載入動畫
+            document.getElementById('results').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>正在分析您的需求並匹配最適合的服務商...</p>
+                </div>
+            `;
+            
+            // 模擬API調用延遲
+            setTimeout(() => {
+                const recommendations = findRecommendations(businessStage, serviceType, productType, budget, requirements);
+                displayResults(recommendations);
+            }, 1500);
+        }
+        
+        function findRecommendations(stage, type, product, budget, requirements) {
+            const regionData = serviceProviders[currentRegion] || {};
+            let results = [];
+            
+            // 如果指定了服務類型，優先匹配
+            if (type && regionData[type]) {
+                results = regionData[type].filter(provider => {
+                    if (stage && provider.stage) {
+                        return provider.stage.includes(stage);
+                    }
+                    return true;
+                });
+            } else {
+                // 如果沒有指定服務類型，根據業務階段推薦
+                Object.keys(regionData).forEach(serviceType => {
+                    const providers = regionData[serviceType].filter(provider => {
+                        if (stage && provider.stage) {
+                            return provider.stage.includes(stage);
+                        }
+                        return true;
+                    });
+                    results = results.concat(providers.map(p => ({...p, serviceType})));
+                });
+            }
+            
+            // 根據產品類型和需求進行進一步篩選
+            if (product || requirements) {
+                const keywords = (product + ' ' + requirements).toLowerCase();
+                results = results.filter(provider => {
+                    const providerText = (provider.name + ' ' + provider.services).toLowerCase();
+                    return keywords.split(' ').some(keyword => 
+                        keyword && providerText.includes(keyword)
+                    );
+                });
+            }
+            
+            return results.slice(0, 5); // 限制返回前5個結果
+        }
+        
+        function displayResults(recommendations) {
+            const resultsDiv = document.getElementById('results');
+            
+            if (recommendations.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="no-results">
+                        😔 抱歉，沒有找到完全匹配的服務商。<br>
+                        建議您：<br>
+                        • 調整篩選條件<br>
+                        • 聯繫亞馬遜全球開店團隊獲取更多建議<br>
+                        • 查看其他地區的服務商選項
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            recommendations.forEach((provider, index) => {
+                html += `
+                    <div class="result-card">
+                        <div class="service-type">${provider.serviceType || '推薦服務商'}</div>
+                        <div class="company-name">${provider.name}</div>
+                        <div class="contact-info">📞 ${provider.contact}</div>
+                        <div class="services">
+                            <strong>服務內容：</strong><br>
+                            ${provider.services}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        // 根據業務階段自動推薦服務類型
+        document.getElementById('businessStage').addEventListener('change', function() {
+            const stage = this.value;
+            const serviceTypeSelect = document.getElementById('serviceType');
+            
+            // 清空當前選擇
+            serviceTypeSelect.value = '';
+            
+            // 根據階段提供建議
+            const suggestions = {
+                'preparation': ['產品認證', '商標申請', '條碼', '稅務會計'],
+                'listing': ['代營運', '翻譯', '廣告行銷'],
+                'shipping': ['物流', '保險'],
+                'selling': ['代營運', '廣告行銷', 'SaaS'],
+                'growth': ['代營運', '廣告行銷', 'SaaS', '教育課程']
+            };
+            
+            if (suggestions[stage]) {
+                // 可以在這裡添加視覺提示，告訴用戶推薦的服務類型
+                console.log('建議的服務類型：', suggestions[stage]);
+            }
+        });
+    </script>
+</body>
+</html>
